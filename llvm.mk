@@ -95,7 +95,7 @@ llvm: llvm-setup libffi ncurses xz
 		-DLLVM_VERSION_SUFFIX="" \
 		-DLLVM_DEFAULT_TARGET_TRIPLE=$(LLVM_DEFAULT_TRIPLE) \
 		-DLLVM_TARGETS_TO_BUILD="X86;ARM;AArch64" \
-		-DLLVM_ENABLE_PROJECTS="clang;libcxx;libcxxabi;lldb;cmark;swift" \
+		-DLLVM_ENABLE_PROJECTS="clang;libcxx;libcxxabi;lldb;cmark;swift;clang-tools-extra" \
 		-DLLVM_EXTERNAL_PROJECTS="cmark;swift" \
 		-DLLVM_EXTERNAL_SWIFT_SOURCE_DIR="$(BUILD_WORK)/llvm/swift" \
 		-DLLVM_EXTERNAL_CMARK_SOURCE_DIR="$(BUILD_WORK)/llvm/cmark" \
@@ -216,6 +216,10 @@ llvm-package: llvm-stage
 	ln -s ../lib/llvm-$(LLVM_MAJOR_V)/bin/swift $(BUILD_DIST)/swift/usr/bin/swift
 	ln -s ../lib/llvm-$(LLVM_MAJOR_V)/bin/swiftc $(BUILD_DIST)/swift/usr/bin/swiftc
 
+	# llvm.mk Prep clang-tools-extra
+	mkdir -p $(BUILD_DIST)/clang-tools-extra/usr/bin
+	cp -a $(BUILD_STAGE)/llvm/usr/lib/llvm-$(LLVM_MAJOR_V)/bin/clang{-tidy,-include-fixer,-rename,d,-doc} $(BUILD_DIST)/clang-tools-extra/usr/bin
+
 	# llvm.mk Sign
 	$(call SIGN,clang-$(LLVM_MAJOR_V),general.xml)
 	$(call SIGN,debugserver-$(LLVM_MAJOR_V),debugserver.xml)
@@ -226,6 +230,7 @@ llvm-package: llvm-stage
 	$(call SIGN,lldb-$(LLVM_MAJOR_V),general.xml)
 	$(call SIGN,dsymutil-$(LLVM_MAJOR_V),general.xml)
 	$(call SIGN,swift-$(SWIFT_VERSION),general.xml)
+	$(call SIGN,clang-tools-extra,general.xml)
 
 	# llvm.mk Make .debs
 	$(call PACK,clang-$(LLVM_MAJOR_V),DEB_LLVM_V)
@@ -245,6 +250,7 @@ llvm-package: llvm-stage
 	$(call PACK,dsymutil,DEB_LLVM_V)
 	$(call PACK,swift-$(SWIFT_VERSION),DEB_SWIFT_V)
 	$(call PACK,swift,DEB_SWIFT_V)
+	$(call PACK,clang-tools-extra,DEB_LLVM_V)
 
 	# llvm.mk Build cleanup
 	rm -rf $(BUILD_DIST)/{clang*,debugserver*,libc++*-dev,libclang-common-*-dev,libclang-cpp*,liblldb-*,libllvm*,liblto*,lldb*,dsymutil*,swift*}/
