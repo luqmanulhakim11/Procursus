@@ -1,0 +1,11 @@
+Package: llvm-binutils
+Version: @DEB_LLVM_V@
+Architecture: @DEB_ARCH@
+Maintainer: @DEB_MAINTAINER@
+Depends: clang-10, libc++-dev, libllvm10, llvm-extra
+Provides: llvm-binutils
+Section: Development
+Priority: optional
+Homepage: https://www.llvm.org/
+Description: LLVM Binutils, the alternative to GNU binutils
+Tag: purpose::console, role::developer

@@ -135,7 +135,7 @@ else
 $(error Please use Linux or MacOS to build)
 endif
 
-DEB_MAINTAINER ?= Hayden Seay <me@diatr.us>
+DEB_MAINTAINER ?= Luqmanul Hakim <saya789.mn@gmail.com>
 
 # Root
 BUILD_ROOT     ?= $(PWD)

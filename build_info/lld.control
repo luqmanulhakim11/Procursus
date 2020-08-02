@@ -1,0 +1,11 @@
+Package: lld
+Version: @DEB_LLVM_V@
+Architecture: @DEB_ARCH@
+Maintainer: @DEB_MAINTAINER@
+Depends: clang-10, libc++-dev, libllvm10
+Provides: lld
+Section: Development
+Priority: optional
+Homepage: https://www.llvm.org/
+Description: The LLD linker from llvm
+Tag: purpose::console, role::developer

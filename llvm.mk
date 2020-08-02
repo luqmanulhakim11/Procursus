@@ -95,7 +95,7 @@ llvm: llvm-setup libffi ncurses xz
 		-DLLVM_VERSION_SUFFIX="" \
 		-DLLVM_DEFAULT_TARGET_TRIPLE=$(LLVM_DEFAULT_TRIPLE) \
 		-DLLVM_TARGETS_TO_BUILD="X86;ARM;AArch64" \
-		-DLLVM_ENABLE_PROJECTS="clang;libcxx;libcxxabi;lldb;cmark;swift;clang-tools-extra" \
+		-DLLVM_ENABLE_PROJECTS="clang;libcxx;libcxxabi;lldb;cmark;swift;clang-tools-extra;lld" \
 		-DLLVM_EXTERNAL_PROJECTS="cmark;swift" \
 		-DLLVM_EXTERNAL_SWIFT_SOURCE_DIR="$(BUILD_WORK)/llvm/swift" \
 		-DLLVM_EXTERNAL_CMARK_SOURCE_DIR="$(BUILD_WORK)/llvm/cmark" \
@@ -126,7 +126,7 @@ endif
 
 llvm-package: llvm-stage
 	# llvm.mk Package Structure
-	rm -rf $(BUILD_DIST)/{clang*,debugserver*,libc++*-dev,libclang-common-*-dev,libclang-cpp*,liblldb-*,libllvm*,liblto*,lldb*,dsymutil*,swift*}/
+	rm -rf $(BUILD_DIST)/{clang*,debugserver*,libc++*-dev,libclang-common-*-dev,libclang-cpp*,liblldb-*,libllvm*,liblto*,lldb*,dsymutil*,swift*,lld*,llvm*}/
 	
 	# llvm.mk Prep clang-$(LLVM_MAJOR_V)
 	mkdir -p $(BUILD_DIST)/clang-$(LLVM_MAJOR_V)/usr/{bin,lib/llvm-$(LLVM_MAJOR_V)/{bin,lib/cmake,share/clang}}
@@ -220,6 +220,29 @@ llvm-package: llvm-stage
 	mkdir -p $(BUILD_DIST)/clang-tools-extra/usr/bin
 	cp -a $(BUILD_STAGE)/llvm/usr/lib/llvm-$(LLVM_MAJOR_V)/bin/clang{-tidy,-include-fixer,-rename,d,-doc} $(BUILD_DIST)/clang-tools-extra/usr/bin
 
+	# llvm.mk Prep llvm-binutils
+	mkdir -p $(BUILD_DIST)/llvm-binutils/usr/bin
+	cp -a $(BUILD_STAGE)/llvm/usr/lib/llvm-$(LLVM_MAJOR_V)/bin/llvm-{ar,cxxfilt,nm,objcopy,objdump,size,strings} $(BUILD_DIST)/llvm-binutils/usr/bin
+	ln -s llvm-symbolizer $(BUILD_DIST)/llvm-binutils/usr/bin/llvm-addr2line
+	ln -s llvm-ar $(BUILD_DIST)/llvm-binutils/usr/bin/llvm-ranlib
+	ln -s llvm-readobj $(BUILD_DIST)/llvm-binutils/usr/bin/llvm-readelf
+	ln -s llvm-objcopy $(BUILD_DIST)/llvm-binutils/usr/bin/llvm-strip
+
+	# llvm.mk Prep llvm-extra
+	mkdir -p $(BUILD_DIST)/llvm-extra/usr/bin
+	cp -a $(BUILD_STAGE)/llvm/usr/lib/llvm-$(LLVM_MAJOR_V)/bin/llc $(BUILD_DIST)/llvm-extra/usr/bin
+	cp -a $(BUILD_STAGE)/llvm/usr/lib/llvm-$(LLVM_MAJOR_V)/bin/lli $(BUILD_DIST)/llvm-extra/usr/bin
+	cp -a $(BUILD_STAGE)/llvm/usr/lib/llvm-$(LLVM_MAJOR_V)/bin/opt $(BUILD_DIST)/llvm-extra/usr/bin
+	cp -a $(BUILD_STAGE)/llvm/usr/lib/llvm-$(LLVM_MAJOR_V)/bin/llvm-{as,config,cov,cxxmap,diff,dis,dwarfdump,lib,link,lipo,mca,profdata,readobj,stress,symbolizer} $(BUILD_DIST)/llvm-extra/usr/bin
+	
+	# llvm.mk Prep lld
+	mkdir -p $(BUILD_DIST)/lld/usr/bin
+	cp -a $(BUILD_STAGE)/llvm/usr/lib/llvm-$(LLVM_MAJOR_V)/bin/lld $(BUILD_DIST)/lld/usr/bin
+	ln -s lld $(BUILD_DIST)/lld/usr/bin/ld.lld
+	ln -s lld $(BUILD_DIST)/lld/usr/bin/ld64.lld
+	ln -s lld $(BUILD_DIST)/lld/usr/bin/ld-link
+	ln -s lld $(BUILD_DIST)/lld/usr/bin/wasm-ld
+
 	# llvm.mk Sign
 	$(call SIGN,clang-$(LLVM_MAJOR_V),general.xml)
 	$(call SIGN,debugserver-$(LLVM_MAJOR_V),debugserver.xml)
@@ -231,6 +254,9 @@ llvm-package: llvm-stage
 	$(call SIGN,dsymutil-$(LLVM_MAJOR_V),general.xml)
 	$(call SIGN,swift-$(SWIFT_VERSION),general.xml)
 	$(call SIGN,clang-tools-extra,general.xml)
+	$(call SIGN,llvm-binutils,general.xml)
+	$(call SIGN,llvm-extra,general.xml)
+	$(call SIGN,lld,general.xml)
 
 	# llvm.mk Make .debs
 	$(call PACK,clang-$(LLVM_MAJOR_V),DEB_LLVM_V)
@@ -251,8 +277,11 @@ llvm-package: llvm-stage
 	$(call PACK,swift-$(SWIFT_VERSION),DEB_SWIFT_V)
 	$(call PACK,swift,DEB_SWIFT_V)
 	$(call PACK,clang-tools-extra,DEB_LLVM_V)
+	$(call PACK,llvm-binutils,DEB_LLVM_V)
+	$(call PACK,llvm-extra,DEB_LLVM_V)
+	$(call PACK,lld,DEB_LLVM_V)
 
 	# llvm.mk Build cleanup
-	rm -rf $(BUILD_DIST)/{clang*,debugserver*,libc++*-dev,libclang-common-*-dev,libclang-cpp*,liblldb-*,libllvm*,liblto*,lldb*,dsymutil*,swift*}/
+	rm -rf $(BUILD_DIST)/{clang*,debugserver*,libc++*-dev,libclang-common-*-dev,libclang-cpp*,liblldb-*,libllvm*,liblto*,lldb*,dsymutil*,swift*,llvm*,lld*}/
 
 .PHONY: llvm llvm-package
